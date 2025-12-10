@@ -5,4 +5,4 @@
 
 Dashboard Power BI analysant l'évolution des salaires en France à partir de données publiques (INSEE, Pôle Emploi).
 
-📂 *Détails et lien à venir une fois le projet finalisé*
+*Détails et lien à venir une fois le projet finalisé*
