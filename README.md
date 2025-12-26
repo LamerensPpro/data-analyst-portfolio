@@ -1,4 +1,4 @@
-# Portfolio Power BI - Pascal Lamerens
+# Portfolio - Pascal Lamerens
 
 Data Analyst | Power BI, SQL, Python | Certifié Wild Code School
 
