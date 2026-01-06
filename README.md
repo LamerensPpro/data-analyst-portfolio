@@ -29,6 +29,6 @@ Nettoyage et amélioration de la qualité d'un dataset de ventes retail volontai
 
 **Source :** [Kaggle - Retail Store Sales (Dirty)](https://www.kaggle.com/datasets/ahmedmohamed2003/retail-store-sales-dirty-for-data-cleaning)
 
-[Voir le projet →](./Projet_02_Data_Cleaning_Retail/) *(en cours)*
+[Voir le projet →](./Projet_02_Data_Cleaning_Retail/) 
 
 ---
