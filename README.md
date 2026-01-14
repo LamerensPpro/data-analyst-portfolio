@@ -32,3 +32,23 @@ Nettoyage et amélioration de la qualité d'un dataset de ventes retail volontai
 [Voir le projet →](./Projet_02_Data_Cleaning_Retail/) 
 
 ---
+
+### [Projet 3 : API Météo & Pollution - France](./Projet_03_API_Meteo_Pollution/)
+
+Application Streamlit d'analyse météo et qualité de l'air pour 40 préfectures françaises via API Open-Meteo.
+
+**Fonctionnalités :**
+- Extraction temps réel (météo + qualité de l'air)
+- Sélection région et ville
+- Statistiques comparatives régionales
+- Classements et visualisations
+
+**Compétences :** Python (Requests, Pandas), Streamlit, API REST, Jointures de données, Matplotlib
+
+**APIs utilisées :**
+- [Open-Meteo Weather API](https://open-meteo.com/en/docs)
+- [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api)
+
+[Voir le projet →](./Projet_03_API_Meteo_Pollution/)
+
+---
