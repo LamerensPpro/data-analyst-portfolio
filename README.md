@@ -52,3 +52,22 @@ Application Streamlit d'analyse météo et qualité de l'air pour 40 préfecture
 [Voir le projet →](./Projet_03_API_Meteo_Pollution/)
 
 ---
+
+### [Projet 4 : SQL Avancé - E-Commerce Analytics](./Projet_04_SQL_Avance/)
+
+Analyses SQL avancées sur une base e-commerce brésilienne (100k+ commandes) : analyses temporelles, segmentation clients, ranking vendeurs.
+
+**Techniques SQL démontrées :**
+- CTE (Common Table Expressions) multiples et imbriquées
+- Window Functions (RANK, NTILE, LAG)
+- Agrégations complexes avec PARTITION BY
+- Analyses RFM (Recency, Monetary)
+- Calculs de croissance temporelle
+
+**Compétences :** SQLite, Requêtes complexes, VS Code (extension SQLite), Analyse métier
+
+**Source :** [Kaggle - Olist E-Commerce Database](https://www.kaggle.com/datasets/terencicp/e-commerce-dataset-by-olist-as-an-sqlite-database)
+
+[Voir le projet →](./Projet_04_SQL_Avance/)
+
+---
