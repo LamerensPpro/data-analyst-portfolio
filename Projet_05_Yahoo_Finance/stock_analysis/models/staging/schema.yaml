@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_stock_prices
+    description: "Données boursières nettoyees et typees - couche staging"
+    columns:
+      - name: date
+        description: "Date de la séance boursiere"
+        tests:
+          - not_null
+      - name: ticker
+        description: "Code ticker de l'action"
+        tests:
+          - not_null
+      - name: open_price
+        description: "Prix d'ouverture en euros"
+        tests:
+          - not_null
+          - positive_values
+      - name: high_price
+        description: "Prix maximum atteint durant la seance"
+        tests:
+          - not_null
+          - positive_values
+      - name: low_price
+        description: "Prix minimum atteint durant la seance"
+        tests:
+          - not_null
+          - positive_values
+      - name: close_price
+        description: "Prix de cloture en euros"
+        tests:
+          - not_null
+          - positive_values
+      - name: volume
+        description: "Nombre total d'actions échangees"
+        tests:
+          - not_null

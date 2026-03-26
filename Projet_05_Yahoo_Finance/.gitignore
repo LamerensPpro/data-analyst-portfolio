@@ -1,0 +1,22 @@
+﻿# Credentials
+.env
+stock_analysis/profiles.yml
+
+# Logs
+logs/
+*.log
+
+# DBT
+target/
+dbt_packages/
+dbt_modules/
+stock_analysis/target/
+stock_analysis/dbt_packages/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Docker
+postgres-db-volume/

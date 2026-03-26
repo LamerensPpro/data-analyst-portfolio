@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: mart_stock_analysis
+    description: "Table finale analyse inter-jours : tendances et moyennes mobiles"
+    columns:
+      - name: date
+        description: "Date de la séance"
+      - name: ticker
+        description: "Code action"
+      - name: close_price
+        description: "Prix de clôture"
+      - name: daily_return_pct
+        description: "Variation journalière en %"
+      - name: ma7
+        description: "Moyenne mobile 7 jours"
+
+  - name: mart_intraday_analysis
+    description: "Table finale analyse intra-jour : volatilité et écarts intrajournaliers"
+    columns:
+      - name: date
+        description: "Date de la séance"
+      - name: ticker
+        description: "Code action"
+      - name: close_price
+        description: "Prix de clôture"
+      - name: intraday_range
+        description: "Écart haut-bas du jour"
+      - name: intraday_volatility_pct
+        description: "Volatilité intraday en %"
+      - name: intraday_return_pct
+        description: "Performance ouverture-clôture"

@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: int_stock_metrics
+    description: "Métriques inter-jours : variation quotidienne et moyenne mobile"
+    columns:
+      - name: date
+        description: "Date de la séance"
+      - name: ticker
+        description: "Code action"
+      - name: close_price
+        description: "Prix de clôture"
+      - name: daily_return_pct
+        description: "Variation en % vs jour précédent"
+      - name: ma7
+        description: "Moyenne mobile 7 jours"
+
+  - name: int_stock_intraday_metrics
+    description: "Métriques intra-jour : volatilité et écarts au sein de la journée"
+    columns:
+      - name: date
+        description: "Date de la séance"
+      - name: ticker
+        description: "Code action"
+      - name: open_price
+        description: "Prix d'ouverture"
+      - name: high_price
+        description: "Prix maximum de la journée"
+      - name: low_price
+        description: "Prix minimum de la journée"
+      - name: close_price
+        description: "Prix de clôture"
+      - name: volume
+        description: "Volume d'actions échangées"
+      - name: intraday_range
+        description: "Écart entre prix haut et bas de la journée"
+      - name: intraday_volatility_pct
+        description: "Volatilité intraday en % de l'ouverture"
+      - name: intraday_return_pct
+        description: "Performance journée : (clôture - ouverture) / ouverture"
+        

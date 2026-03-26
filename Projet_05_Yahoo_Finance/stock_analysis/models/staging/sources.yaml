@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: stock_data
+    description: "Donnees boursieres brutes ingerees depuis Yahoo Finance API"
+    schema: public
+    tables:
+      - name: raw_stock_prices
+        description: "Cours quotidiens des actions CAC 40"
+        columns:
+          - name: Date
+            description: "Date de la seance boursiere"
+          - name: Ticker
+            description: "Code ticker de l'action (Bourse de Paris: .PA)"
+          - name: Open
+            description: "Prix d'ouverture de la seance"
+          - name: High
+            description: "Prix le plus haut de la seance"
+          - name: Low
+            description: "Prix le plus bas de la seance"
+          - name: Close
+            description: "Prix de cloture de la seance"
+          - name: Volume
+            description: "Nombre d'actions echangees durant la seance"

@@ -71,3 +71,19 @@ Analyses SQL avancées sur une base e-commerce brésilienne (100k+ commandes) : 
 [Voir le projet →](./Projet_04_SQL_Avance/)
 
 ---
+
+### [Projet 5 : Pipeline Analytics Engineer - Données Boursières CAC 40](./Projet_05_Yahoo_Finance/)
+
+Pipeline ELT complet avec orchestration Airflow, transformations dbt et analyse de 5 actions du CAC 40.
+
+**Architecture complète :**
+- Ingestion Python (full refresh + incrémental quotidien)
+- Transformations dbt (Bronze → Silver → Gold)
+- Orchestration Airflow (DAG automatisé)
+- 12 tests qualité données automatisés
+
+**Stack technique :** Python, PostgreSQL, dbt-core, Apache Airflow, Docker
+
+**Compétences :** ELT, Analytics Engineering, Orchestration, Data Quality, Architecture en couches, Docker
+
+[Voir le projet →](./Projet_05_Yahoo_Finance/)
