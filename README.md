@@ -87,3 +87,30 @@ Pipeline ELT complet avec orchestration Airflow, transformations dbt et analyse 
 **Compétences :** ELT, Analytics Engineering, Orchestration, Data Quality, Architecture en couches, Docker
 
 [Voir le projet →](./Projet_05_Yahoo_Finance/)
+
+---
+
+### [Projet 6 : Crypto Dashboard - GCP · BigQuery · Looker Studio](./Projet_06_Crypto_GCP_BIGQUERY_LOOKER/)
+
+Pipeline de données crypto end-to-end sur GCP avec dashboard analytique en temps réel.
+
+**Architecture complète :**
+- Ingestion Python via yfinance (BTC, ETH, SOL)
+- Stockage BigQuery
+- Automatisation Cloud Functions + Cloud Scheduler
+- Métriques SQL (RSI, MACD, Moyennes Mobiles, Volatilité)
+- Visualisation Looker Studio
+
+**Métriques SQL :**
+- [RSI (Relative Strength Index)](https://fr.wikipedia.org/wiki/Relative_strength_index)
+- [MACD (Moving Average Convergence Divergence)](https://fr.wikipedia.org/wiki/MACD)
+- [Moyennes Mobiles](https://fr.wikipedia.org/wiki/Moyenne_mobile)
+- [Volatilité](https://fr.wikipedia.org/wiki/Volatilit%C3%A9_(finance))
+
+**Stack technique :** Python, BigQuery, Cloud Functions, Cloud Scheduler, Looker Studio, GCP
+
+**Compétences :** Pipeline cloud, Analytics Engineering, SQL avancé, Automatisation, Data Visualisation
+
+**Dashboard live :** [Voir le dashboard →](https://datastudio.google.com/reporting/a109e328-2fd6-4231-9dce-7d509c84713f)
+
+[Voir le projet →](./Projet_06_Crypto_GCP_BIGQUERY_LOOKER/)
