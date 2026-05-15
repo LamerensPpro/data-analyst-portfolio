@@ -1,0 +1,6 @@
+yfinance
+pandas
+google-cloud-bigquery
+pandas-gbq
+pyarrow
+functions-framework
