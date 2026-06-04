@@ -22,11 +22,12 @@ def get_project():
     return client.project
 
 def download_prices(tickers, start, end):
-    df = yf.download(tickers, start=start, end=end)
+    df = yf.download(tickers, start=start, end=end, auto_adjust=True)
     df = df.stack(level=1, future_stack=True).reset_index()
     df.columns.name = None
     df.columns = [c.lower() for c in df.columns]
     df["date"] = pd.to_datetime(df["date"]).dt.date
+    df = df[["date", "ticker", "open", "high", "low", "close", "volume"]]
     return df
 
 def load_to_bq(df, write_mode):
