@@ -4,3 +4,5 @@ __pycache__/
 data/raw/*.csv
 scripts/test*.py
 keys/*.json
+.env
+dbt_packages/

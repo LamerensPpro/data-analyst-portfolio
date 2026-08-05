@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: mart__anomalies
+    description: "Table consolidant toutes les anomalies détectées (RH et Paie), avec niveau de criticité."
+    columns:
+      - name: matricule
+        description: "Identifiant du salarié concerné par l'anomalie."
+        tests:
+          - not_null
+
+      - name: domaine
+        description: "Domaine de l'anomalie : RH ou Paie."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['RH', 'Paie']
+
+      - name: niveau_criticite
+        description: "Niveau de gravité de l'anomalie."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['critique', 'a verifier']
+
+      - name: type_anomalie
+        description: "Libellé décrivant la nature de l'anomalie détectée."
+        tests:
+          - not_null
+
+  - name: mart_rh__effectifs
+    description: "Effectif actif par mois, service et CSP, avec effectif total mensuel pour calcul de parts."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: effectif
+        description: "Nombre de salariés actifs distincts pour ce mois/service/CSP."
+      - name: effectif_total
+        description: "Effectif total tous services/CSP confondus pour ce mois."
+
+  - name: mart_rh__absenteisme_turnover
+    description: "Absentéisme et turnover par mois, service, CSP et type d'événement, avec taux rapporté à l'effectif."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: type_evenement
+        description: "Type d'événement RH : congé payé, arrêt maladie, congé maternité, congé paternité."
+      - name: nb_evenements
+        description: "Nombre d'événements de ce type pour ce mois/service/CSP."
+      - name: duree_totale_jours
+        description: "Nombre total de jours d'absence cumulés pour ce mois/service/CSP/type d'événement."
+      - name: duree_moyenne_jours
+        description: "Durée moyenne, en jours, des événements de ce type pour ce mois/service/CSP."
+      - name: effectif
+        description: "Effectif actif pour ce mois/service/CSP."
+      - name: taux_absenteisme_pct
+        description: "Taux d'absentéisme en pourcentage (nombre d'événements rapporté à l'effectif). À interpréter avec prudence sur les mois à faible effectif."
+      - name: nb_retrogradations
+        description: "Nombre de rétrogradations CSP détectées ce mois (tous services/CSP confondus)."
+
+  - name: mart_paie__masse_salariale
+    description: "Masse salariale mensuelle par service et CSP, avec anomalies de paie associées."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: nb_salaries
+        description: "Nombre de salariés distincts payés ce mois pour ce service/CSP."
+      - name: montant_total_verse
+        description: "Montant total versé ce mois pour ce service/CSP."
+      - name: total_cotisations_patronales
+        description: "Total des cotisations patronales ce mois pour ce service/CSP."
+      - name: total_cotisations_salariales
+        description: "Total des cotisations salariales ce mois pour ce service/CSP."
+      - name: montant_moyen
+        description: "Montant moyen versé par salarié ce mois pour ce service/CSP."
+      - name: nb_anomalies_paie
+        description: "Nombre d'anomalies de paie détectées ce mois (tous services/CSP confondus)."

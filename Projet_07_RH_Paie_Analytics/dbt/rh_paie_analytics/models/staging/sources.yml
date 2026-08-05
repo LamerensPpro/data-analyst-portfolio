@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: raw
+    database: projet-07-rh-paie-analytics
+    schema: rh_paie_analytics
+    tables:
+      - name: raw_salaries
+      - name: raw_contrats
+      - name: raw_evenements
+      - name: raw_paies
+      - name: raw_smic_historique
