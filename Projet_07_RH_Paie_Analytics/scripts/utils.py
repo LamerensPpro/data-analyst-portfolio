@@ -3,6 +3,7 @@ import random
 from datetime import date, timedelta
 from faker import Faker
 import requests
+import pandas as pd
 
 
 fake = Faker("fr_FR")
@@ -20,10 +21,10 @@ ORDRE_CSP = {"Employé": 0, "Agent de maîtrise": 1, "Cadre": 2}
 SEUIL_MULTI_CONTRAT = 0.25          # 25% des salariés ont plusieurs contrats successifs
 SEUIL_ANOMALIE_RETROGRADATION = 0.15  # 15% de ce sous-groupe subit une rétrogradation anormale
 
-
 HEURES_MENSUELLES = 151.67
 TAUX_COTISATION_PATRONALE = 0.42
 TAUX_COTISATION_SALARIALE = 0.22
+TAUX_AUGMENTATION_ANNUELLE = 1.015  # augmentation moyenne composée de 1,5%/an
 
 SEUIL_ANOMALIE_DATES = 0.03          # 3% dates incohérentes (arrêt avant embauche, chevauchement)
 SEUIL_ANOMALIE_MONTANT = 0.03        # 3% Base×Taux ≠ Montant
@@ -34,7 +35,6 @@ TYPES_EVENEMENT = ["Congé payé", "Arrêt maladie", "Congé maternité", "Cong�
 POIDS_EVENEMENT = [0.6, 0.3, 0.06, 0.04]  # fréquence relative de chaque type
 
 SMIC_PAR_DEFAUT = 11.88  # fallback si l'API est indisponible
-
 
 
 def generer_numero_secu(genre, date_naissance):
@@ -57,14 +57,12 @@ def generer_salaries(nb):
         date_naissance = fake.date_of_birth(minimum_age=20, maximum_age=62)
         date_embauche = fake.date_between(start_date="-10y", end_date="-1M")
 
-        # Anomalie : genre déclaré ≠ genre encodé dans le numéro de sécu
         genre_reel_pour_secu = genre
         if random.random() < SEUIL_ANOMALIE_GENRE:
             genre_reel_pour_secu = "F" if genre == "H" else "H"
 
         numero_secu = generer_numero_secu(genre_reel_pour_secu, date_naissance)
 
-        # Anomalie : numéro de sécu dupliqué (réutilise un numéro déjà généré)
         if numeros_utilises and random.random() < SEUIL_ANOMALIE_DUPLICATA:
             numero_secu = random.choice(numeros_utilises)
         else:
@@ -81,7 +79,6 @@ def generer_salaries(nb):
         })
 
     return salaries
-
 
 
 def generer_contrats(salaries):
@@ -102,24 +99,19 @@ def generer_contrats(salaries):
         for n in range(nb_contrats):
             est_dernier = (n == nb_contrats - 1)
 
-            # Durée du contrat (sauf le dernier, toujours en cours)
             if not est_dernier:
                 duree_mois = random.randint(6, 18)
                 date_fin_courante = date_debut_courante + timedelta(days=duree_mois * 30)
             else:
                 date_fin_courante = None
 
-            # Évolution CSP à partir du 2e contrat
             if n > 0:
                 ordre_actuel = ORDRE_CSP[csp_courante]
                 if aura_retrogradation and est_dernier and ordre_actuel > 0:
-                    # Anomalie : rétrogradation sur le dernier contrat
                     csp_courante = [c for c, o in ORDRE_CSP.items() if o == ordre_actuel - 1][0]
                 elif random.random() < 0.5 and ordre_actuel < 2:
-                    # Évolution normale : promotion
                     csp_courante = [c for c, o in ORDRE_CSP.items() if o == ordre_actuel + 1][0]
 
-            # Évolution type de contrat : CDD -> CDI classique
             if n > 0 and type_courant == "CDD" and random.random() < 0.7:
                 type_courant = "CDI"
 
@@ -144,20 +136,16 @@ def generer_contrats(salaries):
 
     return contrats
 
-def recuperer_smic(annee_mois):
-    """Récupère le SMIC horaire en vigueur via l'API OpenFisca. Fallback si erreur réseau."""
+
+def recuperer_historique_smic_complet():
+    """Un seul appel API pour récupérer tout l'historique SMIC (toutes dates de changement légal)."""
     try:
         url = "https://api.fr.openfisca.org/latest/parameter/marche_travail.salaire_minimum.smic.smic_b_horaire"
         reponse = requests.get(url, timeout=5)
         reponse.raise_for_status()
-        valeurs = reponse.json().get("values", {})
-        dates_valides = [d for d in valeurs if d <= annee_mois]
-        if dates_valides:
-            date_retenue = max(dates_valides)
-            return valeurs[date_retenue]
+        return reponse.json().get("values", {})
     except Exception:
-        pass
-    return SMIC_PAR_DEFAUT
+        return {}
 
 
 def lire_csv(chemin):
@@ -178,15 +166,22 @@ def generer_mois(date_debut, date_fin):
 
 
 def generer_table_smic(mois_liste):
-    """Génère la table de référence SMIC : un seul appel API par mois distinct."""
-    smic_historique = []
-    for mois in mois_liste:
-        smic_horaire = recuperer_smic(mois.isoformat())
-        smic_historique.append({
-            "mois": mois.isoformat(),
-            "smic_horaire": smic_horaire,
-        })
-    return smic_historique
+    """Génère la table de référence SMIC : calendrier + jointure asof + fallback SMIC par défaut."""
+    df_calendrier = pd.DataFrame({"mois": pd.to_datetime([m.isoformat() for m in mois_liste])})
+
+    valeurs_api = recuperer_historique_smic_complet()
+    df_smic = pd.DataFrame(
+        [(pd.to_datetime(d), v) for d, v in valeurs_api.items()],
+        columns=["mois", "smic_horaire"]
+    ).sort_values("mois") if valeurs_api else pd.DataFrame(columns=["mois", "smic_horaire"])
+
+    df_joint = pd.merge_asof(
+        df_calendrier.sort_values("mois"), df_smic, on="mois", direction="backward"
+    )
+    df_joint["smic_horaire"] = df_joint["smic_horaire"].fillna(SMIC_PAR_DEFAUT)
+    df_joint["mois"] = df_joint["mois"].dt.strftime("%Y-%m-%d")
+
+    return df_joint.to_dict("records")
 
 
 def generer_evenements(contrats):
@@ -194,7 +189,7 @@ def generer_evenements(contrats):
     evenement_id = 1
 
     for contrat in contrats:
-        if random.random() > 0.4:  # ~40% des contrats ont un événement
+        if random.random() > 0.4:
             continue
 
         date_debut_contrat = date.fromisoformat(contrat["date_debut"])
@@ -217,7 +212,6 @@ def generer_evenements(contrats):
         date_debut_evt = date_debut_contrat + timedelta(days=random.randint(0, ecart_max))
         date_fin_evt = date_debut_evt + timedelta(days=duree)
 
-        # Anomalie : dates incohérentes (arrêt commençant avant l'embauche)
         if random.random() < SEUIL_ANOMALIE_DATES:
             date_debut_evt = date_debut_contrat - timedelta(days=random.randint(5, 30))
 
@@ -253,6 +247,15 @@ def calculer_montant(base, evenement_actif):
     return round(base * 0.5, 2), "congé maternité/paternité - à traiter par le service paie"
 
 
+def calculer_taux_horaire_reevalue(taux_horaire_initial, date_debut_contrat, mois, smic_par_mois):
+    """Réévalue le taux horaire selon les années écoulées : augmentation moyenne 1.5%/an + alignement SMIC."""
+    nb_annees = mois.year - date_debut_contrat.year
+    taux_reevalue = taux_horaire_initial * (TAUX_AUGMENTATION_ANNUELLE ** nb_annees)
+
+    smic_du_mois = smic_par_mois.get(mois.isoformat(), taux_horaire_initial)
+    return round(max(taux_reevalue, smic_du_mois), 2)
+
+
 def generer_paie(contrats, evenements, mois_liste, smic_par_mois):
     paies = []
     paie_id = 1
@@ -266,13 +269,17 @@ def generer_paie(contrats, evenements, mois_liste, smic_par_mois):
         date_fin_contrat = (
             date.fromisoformat(contrat["date_fin"]) if contrat["date_fin"] else None
         )
-        taux_horaire = float(contrat["taux_horaire"])
+        taux_horaire_initial = float(contrat["taux_horaire"])
 
         for mois in mois_liste:
             if mois < date_debut_contrat:
                 continue
             if date_fin_contrat and mois > date_fin_contrat:
                 continue
+
+            taux_horaire = calculer_taux_horaire_reevalue(
+                taux_horaire_initial, date_debut_contrat, mois, smic_par_mois
+            )
 
             smic_du_mois = smic_par_mois[mois.isoformat()]
 
@@ -321,6 +328,7 @@ def generer_paie(contrats, evenements, mois_liste, smic_par_mois):
 
     return paies
 
+
 def sauvegarder_csv(donnees, chemin, colonnes):
     with open(chemin, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=colonnes)
@@ -343,29 +351,3 @@ if __name__ == "__main__":
 
     print(f"{len(salaries)} salariés générés → data/raw/salaries.csv")
     print(f"{len(contrats)} contrats générés → data/raw/contrats.csv")
-
-    contrats = lire_csv("data/raw/contrats.csv")
-
-    dates_debut = [date.fromisoformat(c["date_debut"]) for c in contrats]
-    mois_liste = generer_mois(min(dates_debut), date.today())
-
-    smic_historique = generer_table_smic(mois_liste)
-    smic_par_mois = {ligne["mois"]: ligne["smic_horaire"] for ligne in smic_historique}
-
-    evenements = generer_evenements(contrats)
-    paies = generer_paie(contrats, evenements, mois_liste, smic_par_mois)
-
-    sauvegarder_csv(
-        evenements, "data/raw/evenements.csv",
-        ["id", "salarie_id", "contrat_id", "type_evenement", "date_debut", "date_fin"]
-    )
-    sauvegarder_csv(
-        paies, "data/raw/paies.csv",
-        ["id", "salarie_id", "contrat_id", "mois", "base", "taux_horaire",
-         "taux_patronal", "taux_salarial", "montant_total", "statut_paie"]
-    )
-    sauvegarder_csv(smic_historique, "data/raw/smic_historique.csv", ["mois", "smic_horaire"])
-
-    print(f"{len(evenements)} événements générés → data/raw/evenements.csv")
-    print(f"{len(paies)} bulletins de paie générés → data/raw/paies.csv")
-    print(f"{len(smic_historique)} mois SMIC générés → data/raw/smic_historique.csv")
