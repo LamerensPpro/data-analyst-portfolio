@@ -144,4 +144,9 @@ Pipeline complet de génération, transformation et contrôle qualité de donné
 
 **Compétences :** Data quality par la logique métier (pas la déduction statistique), architecture de tests dbt, réconciliation légale (SMIC, droit du travail), séparation Bronze/Silver/Gold, gouvernance de la donnée (table de référence des anomalies), observabilité (historisation des résultats de tests)
 
+**Dashboards live :**
+- [Dashboard RH →](https://datastudio.google.com/reporting/cf013c51-6502-44c7-9687-0c24e5246afa)
+- [Dashboard Paie →](https://datastudio.google.com/reporting/332b2515-bfad-4794-a6c0-510e341cf69c)
+- [Dashboard Qualité →](https://datastudio.google.com/reporting/f148711d-041f-4421-9558-6197f8faf88d)
+
 [Voir le projet →](./Projet_07_RH_Paie_Analytics/)
