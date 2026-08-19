@@ -87,3 +87,61 @@ Pipeline ELT complet avec orchestration Airflow, transformations dbt et analyse 
 **Compétences :** ELT, Analytics Engineering, Orchestration, Data Quality, Architecture en couches, Docker
 
 [Voir le projet →](./Projet_05_Yahoo_Finance/)
+
+---
+
+### [Projet 6 : Crypto Dashboard - GCP · BigQuery · Looker Studio](./Projet_06_Crypto_GCP_BIGQUERY_LOOKER/)
+
+Pipeline de données crypto end-to-end sur GCP avec dashboard analytique en temps réel.
+
+**Architecture complète :**
+- Ingestion Python via yfinance (BTC, ETH, SOL)
+- Stockage BigQuery
+- Automatisation Cloud Functions + Cloud Scheduler
+- Métriques SQL (RSI, MACD, Moyennes Mobiles, Volatilité)
+- Visualisation Looker Studio
+
+**Métriques SQL :**
+- [RSI (Relative Strength Index)](https://fr.wikipedia.org/wiki/Relative_strength_index)
+- [MACD (Moving Average Convergence Divergence)](https://fr.wikipedia.org/wiki/MACD)
+- [Moyennes Mobiles](https://fr.wikipedia.org/wiki/Moyenne_mobile)
+- [Volatilité](https://fr.wikipedia.org/wiki/Volatilit%C3%A9_(finance))
+
+**Stack technique :** Python, BigQuery, Cloud Functions, Cloud Scheduler, Looker Studio, GCP
+
+**Compétences :** Pipeline cloud, Analytics Engineering, SQL avancé, Automatisation, Data Visualisation
+
+**Dashboard live :** [Voir le dashboard →](https://datastudio.google.com/reporting/a109e328-2fd6-4231-9dce-7d509c84713f)
+
+[Voir le projet →](./Projet_06_Crypto_GCP_BIGQUERY_LOOKER/)
+
+---
+
+### [Projet 7 : RH & Paie Analytics - Détection d'anomalies data quality](./Projet_07_RH_Paie_Analytics/)
+
+Pipeline complet de génération, transformation et contrôle qualité de données RH/Paie, avec détection d'anomalies basée sur des règles métier réelles (pas de seuils arbitraires).
+
+**Architecture complète :**
+- Génération de données synthétiques réalistes (Python, Faker) : salariés, contrats, événements RH, paies
+- Enrichissement historique SMIC via API OpenFisca (jointure `merge_asof` / fill-forward, pandas)
+- Réévaluation annuelle du taux horaire (augmentation + alignement légal SMIC)
+- Chargement BigQuery (Python, `google-cloud-bigquery`)
+- Transformations dbt en couches (staging → intermediate → marts)
+- **Détection d'anomalies via tests dbt singuliers** (`store_failures`), avec archivage horodaté dans une table d'historique dédiée — pas de logique de détection dupliquée entre modèles et tests
+- Table de référence des anomalies (seed dbt) : code stable, libellé métier, domaine, niveau de criticité — sur le principe d'un référentiel validé par les métiers, pas de valeurs codées en dur
+- Documentation dbt générée (lineage graph, descriptions de modèles et colonnes)
+- 3 dashboards Looker Studio : RH (effectifs, absentéisme, turnover), Paie (masse salariale, cotisations), Qualité (suivi des anomalies dans le temps)
+
+**Anomalies détectées (règles métier, pas de seuils arbitraires) :**
+- Incohérence genre / NIR déclaré, NIR dupliqué
+- Rétrogradation de catégorie socio-professionnelle
+- Date d'événement antérieure à l'embauche
+- CDD sans date de fin (obligation légale)
+- Salaire sous le SMIC en vigueur à la date du bulletin
+- Montant de paie incohérent avec la règle de calcul réelle (congé payé, arrêt maladie selon durée, maternité/paternité)
+
+**Stack technique :** Python, Pandas, Faker, BigQuery, dbt-core, dbt tests (singuliers + `store_failures`), Looker Studio, Git (sparse-checkout)
+
+**Compétences :** Data quality par la logique métier (pas la déduction statistique), architecture de tests dbt, réconciliation légale (SMIC, droit du travail), séparation Bronze/Silver/Gold, gouvernance de la donnée (table de référence des anomalies), observabilité (historisation des résultats de tests)
+
+[Voir le projet →](./Projet_07_RH_Paie_Analytics/)
