@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: raw
+    database: projet-07-rh-paie-analytics
+    schema: rh_paie_analytics
+    tables:
+      - name: raw_salaries
+      - name: raw_contrats
+      - name: raw_evenements
+      - name: raw_paies
+      - name: raw_smic_historique
+
+  - name: anomalies_metier
+    database: projet-07-rh-paie-analytics
+    schema: rh_paie_analytics_anomalies_metier
+    tables:
+      - name: historique_anomalies

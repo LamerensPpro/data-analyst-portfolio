@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: stg_salaries
+    description: "Données de base des salariés (identité, genre, dates), nettoyées et typées depuis la source brute."
+    columns:
+      - name: matricule
+        description: "Identifiant unique du salarié."
+        tests:
+          - unique
+          - not_null
+      - name: numero_secu
+        description: "Numéro de sécurité sociale simplifié, utilisé pour la détection d'anomalies (genre incohérent, doublon)."
+      - name: date_naissance
+        description: "Date de naissance du salarié."
+      - name: date_embauche
+        description: "Date d'embauche initiale du salarié."
+
+  - name: stg_contrats
+    description: "Historique des contrats par salarié (CSP, service, type de contrat, taux horaire)."
+    columns:
+      - name: contrat_id
+        description: "Identifiant unique du contrat."
+        tests:
+          - unique
+          - not_null
+      - name: matricule
+        description: "Référence au salarié concerné."
+      - name: date_debut
+        description: "Date de début du contrat."
+      - name: date_fin
+        description: "Date de fin du contrat (NULL si contrat toujours actif)."
+      - name: csp
+        description: "Catégorie socio-professionnelle : Employé, Agent de maîtrise, Cadre."
+
+  - name: stg_evenements
+    description: "Événements RH par salarié : congés payés, arrêts maladie, congés maternité/paternité."
+    columns:
+      - name: evenement_id
+        description: "Identifiant unique de l'événement."
+        tests:
+          - unique
+          - not_null
+      - name: matricule
+        description: "Référence au salarié concerné."
+      - name: type_evenement
+        description: "Type d'événement RH."
+      - name: date_debut
+        description: "Date de début de l'événement."
+      - name: date_fin
+        description: "Date de fin de l'événement."
+
+  - name: stg_paies
+    description: "Bulletins de paie mensuels par salarié, avec base, cotisations et montant versé."
+    columns:
+      - name: paie_id
+        description: "Identifiant unique du bulletin de paie."
+        tests:
+          - unique
+          - not_null
+      - name: matricule
+        description: "Référence au salarié concerné."
+      - name: mois
+        description: "Mois du bulletin de paie."
+      - name: montant_total
+        description: "Montant total versé au salarié pour ce mois."
+      - name: statut_paie
+        description: "Statut du bulletin : normal, ou à traiter par le service paie (arrêt/congé)."
+
+  - name: stg_smic_historique
+    description: "Historique du SMIC horaire en vigueur, mois par mois, source API OpenFisca."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - unique
+          - not_null
+      - name: smic_horaire
+        description: "Valeur du SMIC horaire brut en vigueur ce mois."

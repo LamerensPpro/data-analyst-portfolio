@@ -1,0 +1,116 @@
+version: 2
+
+models:
+  - name: mart_rh__effectifs
+    description: "Effectif actif par mois, service et CSP, avec effectif total mensuel pour calcul de parts."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: effectif
+        description: "Nombre de salariés actifs distincts pour ce mois/service/CSP."
+      - name: effectif_total
+        description: "Effectif total tous services/CSP confondus pour ce mois."
+
+  - name: mart_rh__absenteisme
+    description: "Absentéisme par mois, service, CSP et type d'événement, avec taux rapporté à l'effectif."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: type_evenement
+        description: "Type d'événement RH : congé payé, arrêt maladie, congé maternité, congé paternité."
+      - name: nb_evenements
+        description: "Nombre d'événements de ce type pour ce mois/service/CSP."
+      - name: duree_totale_jours
+        description: "Nombre total de jours d'absence cumulés pour ce mois/service/CSP/type d'événement."
+      - name: duree_moyenne_jours
+        description: "Durée moyenne, en jours, des événements de ce type pour ce mois/service/CSP."
+      - name: effectif
+        description: "Effectif actif pour ce mois/service/CSP."
+      - name: taux_absenteisme_pct
+        description: "Taux d'absentéisme en pourcentage (nombre d'événements rapporté à l'effectif). À interpréter avec prudence sur les mois à faible effectif."
+
+  - name: mart_rh__turnover
+    description: "Entrées et sorties mensuelles, avec effectif total, pour calcul du taux de turnover (INSEE/DARES)."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: nb_entrees
+        description: "Nombre de contrats ayant débuté ce mois."
+      - name: nb_sorties
+        description: "Nombre de contrats ayant pris fin ce mois."
+      - name: effectif_total
+        description: "Effectif total actif ce mois."
+
+  - name: mart_paie__masse_salariale
+    description: "Masse salariale mensuelle par service et CSP."
+    columns:
+      - name: mois
+        description: "Mois de référence."
+        tests:
+          - not_null
+      - name: service
+        description: "Service du salarié."
+      - name: csp
+        description: "Catégorie socio-professionnelle."
+      - name: nb_salaries
+        description: "Nombre de salariés distincts payés ce mois pour ce service/CSP."
+      - name: montant_total_verse
+        description: "Montant total versé ce mois pour ce service/CSP."
+      - name: total_cotisations_patronales
+        description: "Total des cotisations patronales ce mois pour ce service/CSP."
+      - name: total_cotisations_salariales
+        description: "Total des cotisations salariales ce mois pour ce service/CSP."
+      - name: montant_moyen
+        description: "Montant moyen versé par salarié ce mois pour ce service/CSP."
+
+  - name: mart__anomalies
+    description: "Historique des anomalies métier détectées par les tests dbt (store_failures), enrichi avec le libellé et la criticité depuis la table de référence."
+    columns:
+      - name: date_run
+        description: "Horodatage de l'exécution des tests ayant détecté cette anomalie."
+        tests:
+          - not_null
+
+      - name: matricule
+        description: "Identifiant du salarié concerné par l'anomalie."
+        tests:
+          - not_null
+      
+      - name: mois
+        description: "Mois métier de référence de l'anomalie (date de début de contrat ou de bulletin de paie concerné). Peut être NULL pour les anomalies liées au salarié sans notion temporelle (ex: NIR)."
+
+      - name: code_anomalie
+        description: "Code stable identifiant le type d'anomalie (ex: RH_001, PAIE_002)."
+        tests:
+          - not_null
+
+      - name: type_anomalie
+        description: "Libellé lisible de l'anomalie, depuis la table de référence."
+
+      - name: domaine
+        description: "Domaine de l'anomalie : RH ou Paie."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['RH', 'Paie']
+
+      - name: niveau_criticite
+        description: "Niveau de gravité de l'anomalie, depuis la table de référence."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['critique', 'a verifier']
