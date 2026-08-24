@@ -29,29 +29,18 @@ masse_salariale_mensuelle as (
 
     from paies_avec_contexte
     group by mois, service, csp
-),
-
-anomalies_par_mois as (
-    select
-        mois,
-        count(*) as nb_anomalies_paie
-    from {{ ref('int_anomalies_paies') }}
-    group by mois
 )
 
 select
-    masse_salariale_mensuelle.mois,
-    masse_salariale_mensuelle.service,
-    masse_salariale_mensuelle.csp,
-    masse_salariale_mensuelle.nb_salaries,
-    masse_salariale_mensuelle.montant_total_verse,
-    masse_salariale_mensuelle.total_cotisations_patronales,
-    masse_salariale_mensuelle.total_cotisations_salariales,
-    masse_salariale_mensuelle.montant_moyen,
-    anomalies_par_mois.nb_anomalies_paie
+    mois,
+    service,
+    csp,
+    nb_salaries,
+    montant_total_verse,
+    total_cotisations_patronales,
+    total_cotisations_salariales,
+    montant_moyen
 
 from masse_salariale_mensuelle
-left join anomalies_par_mois
-    on masse_salariale_mensuelle.mois = anomalies_par_mois.mois
 
-order by masse_salariale_mensuelle.mois, masse_salariale_mensuelle.service, masse_salariale_mensuelle.csp
+order by mois, service, csp

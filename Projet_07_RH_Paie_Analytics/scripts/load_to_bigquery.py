@@ -2,16 +2,9 @@
 Chargement des CSV bruts dans BigQuery (Projet 7 - RH/Paie Analytics)
 """
 
-import os
-from dotenv import load_dotenv
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
-
-load_dotenv()
-
-KEYFILE = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-PROJECT_ID = os.environ["GCP_PROJECT_ID"]
-DATASET = os.environ["GCP_DATASET"]
+from bigquery_client import obtenir_client, PROJECT_ID, DATASET
 
 FICHIERS = {
     "raw_salaries": "data/raw/salaries.csv",
@@ -50,7 +43,7 @@ def charger_csv_vers_bigquery(client, table_id, chemin_csv):
 
 
 if __name__ == "__main__":
-    client = bigquery.Client.from_service_account_json(KEYFILE, project=PROJECT_ID)
+    client = obtenir_client()
 
     dataset_id = f"{PROJECT_ID}.{DATASET}"
     creer_dataset_si_absent(client, dataset_id)

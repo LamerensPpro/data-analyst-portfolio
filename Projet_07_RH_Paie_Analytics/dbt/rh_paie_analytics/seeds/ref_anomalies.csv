@@ -1,0 +1,10 @@
+code_anomalie,libelle,domaine,niveau_criticite
+RH_001,Genre incohérent avec le NIR,RH,critique
+RH_002,NIR dupliqué,RH,critique
+RH_003,Rétrogradation CSP,RH,a verifier
+RH_004,Date événement antérieure à l'embauche,RH,critique
+RH_005,CDD sans date de fin,RH,critique
+PAIE_001,Salaire sous le SMIC en vigueur,Paie,critique
+PAIE_002,Incohérence montant normal/congé payé,Paie,a verifier
+PAIE_003,Incohérence montant arrêt maladie,Paie,a verifier
+PAIE_004,Incohérence montant maternité/paternité,Paie,a verifier

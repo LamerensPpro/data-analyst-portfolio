@@ -6,3 +6,4 @@ scripts/test*.py
 keys/*.json
 .env
 dbt_packages/
+dbt/logs/

@@ -1,11 +1,4 @@
 from datetime import date
-""""
-from utils import (
-    generer_salaries, generer_contrats, generer_mois,
-    generer_table_smic, generer_evenements, generer_paie,
-    sauvegarder_csv, NB_SALARIES
-)
-"""
 import utils
 
 if __name__ == "__main__":
@@ -39,8 +32,8 @@ if __name__ == "__main__":
     )
     utils.sauvegarder_csv(
         paies, "data/raw/paies.csv",
-        ["id", "salarie_id", "contrat_id", "mois", "base", "taux_horaire",
-         "taux_patronal", "taux_salarial", "montant_total", "statut_paie"]
+        ["id", "salarie_id", "contrat_id", "mois", "evenement_id", "base", "taux_horaire",
+         "taux_patronal", "taux_salarial", "montant_total"]
     )
     utils.sauvegarder_csv(smic_historique, "data/raw/smic_historique.csv", ["mois", "smic_horaire"])
 

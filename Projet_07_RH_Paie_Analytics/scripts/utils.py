@@ -10,8 +10,8 @@ fake = Faker("fr_FR")
 random.seed(42)  # reproductibilité
 
 NB_SALARIES = 130
-SEUIL_ANOMALIE_GENRE = 0.03      # 3% genre ≠ num sécu
-SEUIL_ANOMALIE_DUPLICATA = 0.02  # 2% num sécu dupliqué
+SEUIL_ANOMALIE_GENRE = 0.03      # 3% genre ≠ NIR
+SEUIL_ANOMALIE_DUPLICATA = 0.02  # 2% NIR dupliqué
 SEUIL_ANOMALIE_CSP = 0.04        # 4% erreur classification CSP
 
 SERVICES = ["Production", "Commercial", "RH", "Finance", "IT", "Direction"]
@@ -20,15 +20,15 @@ CSP_VALIDES = ["Employé", "Agent de maîtrise", "Cadre"]
 ORDRE_CSP = {"Employé": 0, "Agent de maîtrise": 1, "Cadre": 2}
 SEUIL_MULTI_CONTRAT = 0.25          # 25% des salariés ont plusieurs contrats successifs
 SEUIL_ANOMALIE_RETROGRADATION = 0.15  # 15% de ce sous-groupe subit une rétrogradation anormale
+SEUIL_ANOMALIE_CDD_SANS_FIN = 0.03  # 3% des CDD (dernier contrat) ont une date de fin manquante
 
 HEURES_MENSUELLES = 151.67
 TAUX_COTISATION_PATRONALE = 0.42
 TAUX_COTISATION_SALARIALE = 0.22
 TAUX_AUGMENTATION_ANNUELLE = 1.015  # augmentation moyenne composée de 1,5%/an
 
-SEUIL_ANOMALIE_DATES = 0.03          # 3% dates incohérentes (arrêt avant embauche, chevauchement)
-SEUIL_ANOMALIE_MONTANT = 0.03        # 3% Base×Taux ≠ Montant
-SEUIL_ANOMALIE_CONVERSION = 0.04     # 4% erreur conversion horaire→mensuel
+SEUIL_ANOMALIE_DATES = 0.03          # 3% dates incohérentes (arrêt avant embauche)
+SEUIL_ANOMALIE_MONTANT = 0.03        # 3% incohérence montant vs règle de calcul
 SEUIL_ANOMALIE_SMIC = 0.02           # 2% salaire sous SMIC en vigueur
 
 TYPES_EVENEMENT = ["Congé payé", "Arrêt maladie", "Congé maternité", "Congé paternité"]
@@ -57,11 +57,11 @@ def generer_salaries(nb):
         date_naissance = fake.date_of_birth(minimum_age=20, maximum_age=62)
         date_embauche = fake.date_between(start_date="-10y", end_date="-1M")
 
-        genre_reel_pour_secu = genre
+        genre_reel_pour_nir = genre
         if random.random() < SEUIL_ANOMALIE_GENRE:
-            genre_reel_pour_secu = "F" if genre == "H" else "H"
+            genre_reel_pour_nir = "F" if genre == "H" else "H"
 
-        numero_secu = generer_numero_secu(genre_reel_pour_secu, date_naissance)
+        numero_secu = generer_numero_secu(genre_reel_pour_nir, date_naissance)
 
         if numeros_utilises and random.random() < SEUIL_ANOMALIE_DUPLICATA:
             numero_secu = random.choice(numeros_utilises)
@@ -103,7 +103,15 @@ def generer_contrats(salaries):
                 duree_mois = random.randint(6, 18)
                 date_fin_courante = date_debut_courante + timedelta(days=duree_mois * 30)
             else:
-                date_fin_courante = None
+                if type_courant == "CDD":
+                    # Un CDD a toujours une date de fin prévue, par définition légale
+                    duree_mois = random.randint(6, 18)
+                    date_fin_courante = date_debut_courante + timedelta(days=duree_mois * 30)
+                    # Anomalie : date de fin manquante (oubli de saisie RH)
+                    if random.random() < SEUIL_ANOMALIE_CDD_SANS_FIN:
+                        date_fin_courante = None
+                else:
+                    date_fin_courante = None
 
             if n > 0:
                 ordre_actuel = ORDRE_CSP[csp_courante]
@@ -229,22 +237,23 @@ def generer_evenements(contrats):
 
 
 def calculer_montant(base, evenement_actif):
-    """Applique les règles simplifiées selon le type d'événement en cours."""
+    """Calcule le montant selon la règle légale correspondant au type d'événement en cours."""
     if evenement_actif is None:
-        return base, "normal"
+        return base
 
     type_evt = evenement_actif["type_evenement"]
 
     if type_evt == "Congé payé":
-        return base, "normal"
+        return base
 
     if type_evt == "Arrêt maladie":
         duree = (date.fromisoformat(evenement_actif["date_fin"]) -
                   date.fromisoformat(evenement_actif["date_debut"])).days
         taux = 0.90 if duree <= 30 else 0.6667
-        return round(base * taux, 2), "arrêt maladie - à valider service paie"
+        return round(base * taux, 2)
 
-    return round(base * 0.5, 2), "congé maternité/paternité - à traiter par le service paie"
+    # Congé maternité / paternité
+    return round(base * 0.5, 2)
 
 
 def calculer_taux_horaire_reevalue(taux_horaire_initial, date_debut_contrat, mois, smic_par_mois):
@@ -299,30 +308,26 @@ def generer_paie(contrats, evenements, mois_liste, smic_par_mois):
                     evenement_actif = evt
                     break
 
-            montant, statut_paie = calculer_montant(base, evenement_actif)
+            montant = calculer_montant(base, evenement_actif)
 
-            # Anomalie : conversion horaire → mensuel erronée (oubli du facteur 151,67h)
-            if random.random() < SEUIL_ANOMALIE_CONVERSION:
-                montant = round(taux_horaire, 2)
+            # Anomalie : incohérence montant vs règle de calcul
+            if random.random() < SEUIL_ANOMALIE_MONTANT:
+                montant = round(montant * random.uniform(1.1, 1.3), 2)
 
             taux_patronal = round(montant * TAUX_COTISATION_PATRONALE, 2)
             taux_salarial = round(montant * TAUX_COTISATION_SALARIALE, 2)
-
-            # Anomalie : Base × Taux ≠ Montant
-            if random.random() < SEUIL_ANOMALIE_MONTANT:
-                montant = round(montant * random.uniform(1.1, 1.3), 2)
 
             paies.append({
                 "id": paie_id,
                 "salarie_id": contrat["salarie_id"],
                 "contrat_id": contrat["id"],
                 "mois": mois.isoformat(),
+                "evenement_id": evenement_actif["id"] if evenement_actif else "",
                 "base": base,
                 "taux_horaire": taux_horaire,
                 "taux_patronal": taux_patronal,
                 "taux_salarial": taux_salarial,
                 "montant_total": montant,
-                "statut_paie": statut_paie,
             })
             paie_id += 1
 
@@ -346,8 +351,34 @@ if __name__ == "__main__":
     )
     sauvegarder_csv(
         contrats, "data/raw/contrats.csv",
-        ["id", "salarie_id", "date_debut", "date_fin", "csp", "service","type_contrat", "temps_travail", "taux_horaire"]
+        ["id", "salarie_id", "date_debut", "date_fin", "csp", "service", "type_contrat", "temps_travail", "taux_horaire"]
     )
 
     print(f"{len(salaries)} salariés générés → data/raw/salaries.csv")
     print(f"{len(contrats)} contrats générés → data/raw/contrats.csv")
+
+    contrats = lire_csv("data/raw/contrats.csv")
+
+    dates_debut = [date.fromisoformat(c["date_debut"]) for c in contrats]
+    mois_liste = generer_mois(min(dates_debut), date.today())
+
+    smic_historique = generer_table_smic(mois_liste)
+    smic_par_mois = {ligne["mois"]: ligne["smic_horaire"] for ligne in smic_historique}
+
+    evenements = generer_evenements(contrats)
+    paies = generer_paie(contrats, evenements, mois_liste, smic_par_mois)
+
+    sauvegarder_csv(
+        evenements, "data/raw/evenements.csv",
+        ["id", "salarie_id", "contrat_id", "type_evenement", "date_debut", "date_fin"]
+    )
+    sauvegarder_csv(
+        paies, "data/raw/paies.csv",
+        ["id", "salarie_id", "contrat_id", "mois", "evenement_id", "base", "taux_horaire",
+         "taux_patronal", "taux_salarial", "montant_total"]
+    )
+    sauvegarder_csv(smic_historique, "data/raw/smic_historique.csv", ["mois", "smic_horaire"])
+
+    print(f"{len(evenements)} événements générés → data/raw/evenements.csv")
+    print(f"{len(paies)} bulletins de paie générés → data/raw/paies.csv")
+    print(f"{len(smic_historique)} mois SMIC générés → data/raw/smic_historique.csv")

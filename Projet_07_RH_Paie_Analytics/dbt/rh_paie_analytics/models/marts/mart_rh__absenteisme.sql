@@ -1,8 +1,5 @@
 with evenements as (
     select * from {{ ref('stg_evenements') }}
-    where evenement_id not in (
-        select evenement_id from {{ ref('int_anomalies_evenements') }}
-    )
 ),
 
 contrats as (
@@ -35,14 +32,6 @@ absenteisme_mensuel as (
         avg(date_diff(date_fin, date_debut, day)) as duree_moyenne_jours
     from evenements_avec_contexte
     group by mois_evenement, service, csp, type_evenement
-),
-
-retrogradations as (
-    select
-        date_trunc(date_debut, month) as mois,
-        count(*) as nb_retrogradations
-    from {{ ref('int_contrats_historique') }}
-    group by date_trunc(date_debut, month)
 )
 
 select
@@ -54,15 +43,12 @@ select
     absenteisme_mensuel.duree_totale_jours,
     absenteisme_mensuel.duree_moyenne_jours,
     effectifs.effectif,
-    round(absenteisme_mensuel.nb_evenements / nullif(effectifs.effectif, 0) * 100, 2) as taux_absenteisme_pct,
-    retrogradations.nb_retrogradations
+    round(absenteisme_mensuel.nb_evenements / nullif(effectifs.effectif, 0) * 100, 2) as taux_absenteisme_pct
 
 from absenteisme_mensuel
 left join effectifs
     on absenteisme_mensuel.mois = effectifs.mois
     and absenteisme_mensuel.service = effectifs.service
     and absenteisme_mensuel.csp = effectifs.csp
-left join retrogradations
-    on absenteisme_mensuel.mois = retrogradations.mois
 
 order by absenteisme_mensuel.mois, absenteisme_mensuel.service, absenteisme_mensuel.csp
